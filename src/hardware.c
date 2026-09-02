@@ -51,9 +51,9 @@ static const struct {
   const char *dir;
   const char *prefix;
 } gpu_scan_dirs[] = {
-    {"/dev/dri", "renderD"},    {"/dev", "nvidia"}, {"/dev", "video"},
-    {"/dev/nvidia-caps", NULL}, {"/dev", "mali"},   {"/dev", "kgsl"},
-    {"/dev/dma_heap", NULL},    {NULL, NULL}, /* sentinel */
+    {"/dev/dri", "renderD"},    {"/dev/dri", "card"},       {"/dev", "nvidia"}, 
+    {"/dev", "video"},          {"/dev/nvidia-caps", NULL}, {"/dev", "mali"},   
+    {"/dev", "kgsl"},           {"/dev/dma_heap", NULL},    {NULL, NULL}, /* sentinel */
 };
 
 /* Static paths: individual nodes that don't fit a directory scan */

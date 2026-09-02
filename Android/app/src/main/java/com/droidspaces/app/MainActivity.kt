@@ -167,6 +167,15 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun handleIntent(intent: Intent) {
+        if (intent.action == "com.droidspaces.app.action.LAUNCH_APP") {
+            val uuid = intent.getStringExtra("container_uuid")
+            val exec = intent.getStringExtra("app_exec")
+            if (uuid != null && exec != null) {
+                // Pass it to navigation as a special deep link
+                pendingShortcut = "launch_app:$uuid:$exec"
+                return
+            }
+        }
         pendingShortcut = when (intent.action) {
             ACTION_SHORTCUT_CONTAINERS -> "containers"
             ACTION_SHORTCUT_PANEL -> "panel"

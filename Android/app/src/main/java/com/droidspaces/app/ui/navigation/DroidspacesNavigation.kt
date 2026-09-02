@@ -98,6 +98,9 @@ sealed class Screen(val route: String) {
     data object Systemd : Screen("systemd/{containerName}") {
         fun createRoute(containerName: String) = "systemd/${Uri.encode(containerName)}"
     }
+    data object ContainerApps : Screen("container_apps/{containerName}") {
+        fun createRoute(containerName: String) = "container_apps/${Uri.encode(containerName)}"
+    }
     data object UnitDetail : Screen("unit-detail/{containerName}/{unitName}") {
         fun createRoute(containerName: String, unitName: String) =
             "unit-detail/${Uri.encode(containerName)}/${Uri.encode(unitName)}"
@@ -185,17 +188,46 @@ fun DroidspacesNavigation(
     LaunchedEffect(pendingShortcut) {
         val shortcut = pendingShortcut ?: return@LaunchedEffect
         if (prefsManager.isSetupCompleted) {
-            when (shortcut) {
-                "settings" -> navController.navigate(Screen.Settings.route) {
-                    popUpTo(Screen.Home.route) { inclusive = false }
-                    launchSingleTop = true
-                }
-                "containers", "panel" -> {
-                    requestedTab =
-                        if (shortcut == "containers") TabItem.Containers else TabItem.ControlPanel
+            if (shortcut.startsWith("launch_app:")) {
+                val parts = shortcut.split(":", limit = 3)
+                if (parts.size == 3) {
+                    val uuid = parts[1]
+                    val exec = parts[2]
+                    
+                    launch(Dispatchers.IO) {
+                        val container = ContainerManager.getContainers().find { it.uuid == uuid }
+                        if (container != null) {
+                            if (!container.isRunning) {
+                                ContainerManager.startContainer(container.name)
+                            }
+                            
+                            com.topjohnwu.superuser.Shell.cmd("${Constants.BIN_DIR}/droidspaces exec ${container.name} -- $exec &").submit()
+                            
+                            val socketPath = "/data/local/tmp/anland-${container.uuid}.sock"
+                            withContext(Dispatchers.Main) {
+                                com.droidspaces.app.util.AnlandUtils.launchWindow(context, container.name, socketPath)
+                            }
+                        }
+                    }
+                    
                     navController.navigate(Screen.Home.createRoute()) {
                         popUpTo(Screen.Home.route) { inclusive = false }
                         launchSingleTop = true
+                    }
+                }
+            } else {
+                when (shortcut) {
+                    "settings" -> navController.navigate(Screen.Settings.route) {
+                        popUpTo(Screen.Home.route) { inclusive = false }
+                        launchSingleTop = true
+                    }
+                    "containers", "panel" -> {
+                        requestedTab =
+                            if (shortcut == "containers") TabItem.Containers else TabItem.ControlPanel
+                        navController.navigate(Screen.Home.createRoute()) {
+                            popUpTo(Screen.Home.route) { inclusive = false }
+                            launchSingleTop = true
+                        }
                     }
                 }
             }
@@ -519,6 +551,21 @@ fun DroidspacesNavigation(
         }
 
         composable(
+            route = Screen.ContainerApps.route,
+            arguments = listOf(
+                navArgument("containerName") { type = NavType.StringType }
+            ),
+            enterTransition = defaultEnterTransition,
+            exitTransition = defaultExitTransition
+        ) { backStackEntry ->
+            val containerName = backStackEntry.arguments?.getString("containerName") ?: ""
+            com.droidspaces.app.ui.screen.ContainerAppsScreen(
+                containerName = containerName,
+                onNavigateBack = { navController.popBackStack() }
+            )
+        }
+
+        composable(
             route = Screen.Settings.route,
             enterTransition = defaultEnterTransition,
             exitTransition = defaultExitTransition,
@@ -607,6 +654,9 @@ fun DroidspacesNavigation(
                     onNavigateBack = {
                         navController.popBackStack()
                         sharedContainerViewModel.refresh()
+                    },
+                    onOpenApps = {
+                        navController.navigate(Screen.ContainerApps.createRoute(it.name))
                     },
                     onNavigateToServices = { initSystem ->
                         when (initSystem) {

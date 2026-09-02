@@ -22,7 +22,7 @@ data class ContainerConfigState(
     val enableGpuMode: Boolean = false,
     val enableTermuxX11: Boolean = false,
     val tx11ExtraFlags: String = "",
-    val enableAnland: Boolean = false,
+    val enableAnland: Boolean = true,
     val enableVirgl: Boolean = false,
     val virglExtraFlags: String = "",
     val enablePulseaudio: Boolean = false,

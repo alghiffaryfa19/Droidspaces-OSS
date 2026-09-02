@@ -65,7 +65,8 @@ fun ContainerDetailsScreen(
     container: ContainerInfo,
     onNavigateBack: () -> Unit,
     onNavigateToServices: (InitSystem) -> Unit = {},
-    onNavigateToTerminal: () -> Unit = {}
+    onNavigateToTerminal: () -> Unit = {},
+    onOpenApps: () -> Unit = {}
 ) {
     val context = LocalContext.current
     val snackbarHostState = remember { SnackbarHostState() }
@@ -272,6 +273,9 @@ fun ContainerDetailsScreen(
                     anlandEnabled = container.enableAnland && anlandSocket != null,
                     onLaunchAnland = {
                         anlandSocket?.let { AnlandUtils.launchWindow(context, container.name, it) }
+                    },
+                    onOpenApps = {
+                        navController.navigate(Screen.ContainerApps.createRoute(container.name))
                     }
                 )
             }
@@ -392,6 +396,7 @@ private fun TerminalCard(
     onOpenTerminal: () -> Unit,
     anlandEnabled: Boolean = false,
     onLaunchAnland: () -> Unit = {},
+    onOpenApps: () -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     val context = LocalContext.current
@@ -487,24 +492,49 @@ private fun TerminalCard(
         // Launch the anland desktop window, shown only when this container has
         // the anland display daemon enabled and a live socket recorded.
         if (anlandEnabled) {
-            Button(
-                onClick = onLaunchAnland,
+            Row(
                 modifier = Modifier.fillMaxWidth(),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.secondaryContainer,
-                    contentColor = MaterialTheme.colorScheme.onSecondaryContainer
-                )
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                Icon(
-                    Icons.Default.DesktopWindows,
-                    contentDescription = null,
-                    modifier = Modifier.size(16.dp)
-                )
-                Spacer(Modifier.width(6.dp))
-                Text(
-                    context.getString(R.string.launch_anland_window),
-                    fontWeight = FontWeight.SemiBold
-                )
+                Button(
+                    onClick = onLaunchAnland,
+                    modifier = Modifier.weight(1f),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                        contentColor = MaterialTheme.colorScheme.onSecondaryContainer
+                    )
+                ) {
+                    Icon(
+                        Icons.Default.DesktopWindows,
+                        contentDescription = null,
+                        modifier = Modifier.size(16.dp)
+                    )
+                    Spacer(Modifier.width(6.dp))
+                    Text(
+                        context.getString(R.string.launch_anland_window),
+                        fontWeight = FontWeight.SemiBold
+                    )
+                }
+                
+                Button(
+                    onClick = onOpenApps,
+                    modifier = Modifier.weight(1f),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                        contentColor = MaterialTheme.colorScheme.onSecondaryContainer
+                    )
+                ) {
+                    Icon(
+                        Icons.Default.Apps,
+                        contentDescription = null,
+                        modifier = Modifier.size(16.dp)
+                    )
+                    Spacer(Modifier.width(6.dp))
+                    Text(
+                        "Applications",
+                        fontWeight = FontWeight.SemiBold
+                    )
+                }
             }
         }
       }
