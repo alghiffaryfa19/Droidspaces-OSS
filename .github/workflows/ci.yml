@@ -68,13 +68,23 @@ jobs:
         echo "[+] Toolchains ready."
         tree -L 3 $HOME/toolchains
 
-    - name: Build and integrate create-disp
-      run: |
-        # Add arm64 architecture and install system dependencies
-        sudo dpkg --add-architecture arm64
-        sudo apt-get update
-        sudo apt-get install -y gcc-aarch64-linux-gnu g++-aarch64-linux-gnu \
-            libsystemd-dev:arm64 libdrm-dev:arm64
+        # Download and extract libsystemd for arm64 from Ubuntu Ports
+        SYS_URL="http://ports.ubuntu.com/pool/main/s/systemd/"
+        SYS_DEV=$(curl -s $SYS_URL | grep -o 'libsystemd-dev_[^"]*_arm64\.deb' | head -n 1)
+        SYS_LIB=$(curl -s $SYS_URL | grep -o 'libsystemd0_[^"]*_arm64\.deb' | head -n 1)
+        wget -q -O sys-dev.deb "$SYS_URL$SYS_DEV"
+        wget -q -O sys-lib.deb "$SYS_URL$SYS_LIB"
+        dpkg -x sys-dev.deb ubuntu-deps
+        dpkg -x sys-lib.deb ubuntu-deps
+        
+        # Download and extract libdrm for arm64 from Ubuntu Ports
+        DRM_URL="http://ports.ubuntu.com/pool/main/libd/libdrm/"
+        DRM_DEV=$(curl -s $DRM_URL | grep -o 'libdrm-dev_[^"]*_arm64\.deb' | head -n 1)
+        DRM_LIB=$(curl -s $DRM_URL | grep -o 'libdrm2_[^"]*_arm64\.deb' | head -n 1)
+        wget -q -O drm-dev.deb "$DRM_URL$DRM_DEV"
+        wget -q -O drm-lib.deb "$DRM_URL$DRM_LIB"
+        dpkg -x drm-dev.deb ubuntu-deps
+        dpkg -x drm-lib.deb ubuntu-deps
             
         # Download and extract libhybris from UBPorts
         HYB_URL="http://repo.ubports.com/pool/main/libh/libhybris/"
@@ -85,19 +95,25 @@ jobs:
         dpkg -x hyb-dev.deb ubports-deps
         dpkg -x hyb-lib.deb ubports-deps
         
-        # Fix absolute symlinks in ubports-deps to relative, and create missing .so symlinks
-        for link in $(find ubports-deps -type l -name "*.so"); do
-            target=$(readlink "$link")
-            if [[ "$target" == /* ]]; then
-                ln -sf "$(basename "$target")" "$link"
-            fi
+        # Fix absolute symlinks and create missing .so symlinks
+        for depdir in ubuntu-deps ubports-deps; do
+            for link in $(find $depdir -type l -name "*.so"); do
+                target=$(readlink "$link")
+                if [[ "$target" == /* ]]; then
+                    ln -sf "$(basename "$target")" "$link"
+                fi
+            done
+            for lib in $(find $depdir -type f -name "*.so.*"); do
+                base_so="${lib%%.so.*}.so"
+                if [ ! -e "$base_so" ]; then
+                    ln -sf "$(basename "$lib")" "$base_so"
+                fi
+            done
         done
-        for lib in $(find ubports-deps -type f -name "*.so.*"); do
-            base_so="${lib%%.so.*}.so"
-            if [ ! -e "$base_so" ]; then
-                ln -sf "$(basename "$lib")" "$base_so"
-            fi
-        done
+        
+        # Fix pkg-config prefix paths for cross-compilation
+        find ubuntu-deps -name "*.pc" -exec sed -i "s|^prefix=.*|prefix=$(pwd)/ubuntu-deps/usr|g" {} +
+        find ubports-deps -name "*.pc" -exec sed -i "s|^prefix=.*|prefix=$(pwd)/ubports-deps/usr|g" {} +
         
         # Clone Android headers (required by libhybris)
         git clone --depth 1 -b halium-11.0 https://github.com/Halium/android-headers.git
@@ -105,9 +121,13 @@ jobs:
         # Clone libhybris source (for missing internal headers like windowbuffer.h)
         git clone --depth 1 https://github.com/Linux-on-droid/libhybris.git
         
-        # Set CFLAGS and LDFLAGS
-        export CFLAGS="-I$(pwd)/libhybris/hybris/include -I$(pwd)/libhybris -I$(pwd)/ubports-deps/usr/include -I$(pwd)/android-headers"
-        export LDFLAGS="-L$(pwd)/ubports-deps/usr/lib/aarch64-linux-gnu -L$(pwd)/ubports-deps/lib/aarch64-linux-gnu"
+        # Set pkg-config path to point to the extracted libraries
+        export PKG_CONFIG_PATH="$(pwd)/ubuntu-deps/usr/lib/aarch64-linux-gnu/pkgconfig:$(pwd)/ubports-deps/usr/lib/aarch64-linux-gnu/pkgconfig:$PKG_CONFIG_PATH"
+        export CFLAGS="-I$(pwd)/libhybris/hybris/include -I$(pwd)/libhybris -I$(pwd)/ubuntu-deps/usr/include -I$(pwd)/ubuntu-deps/usr/include/aarch64-linux-gnu -I$(pwd)/ubuntu-deps/usr/include/libdrm -I$(pwd)/ubports-deps/usr/include -I$(pwd)/android-headers"
+        export LDFLAGS="-L$(pwd)/ubuntu-deps/lib/aarch64-linux-gnu -L$(pwd)/ubuntu-deps/usr/lib/aarch64-linux-gnu -L$(pwd)/ubports-deps/usr/lib/aarch64-linux-gnu -L$(pwd)/ubports-deps/lib/aarch64-linux-gnu"
+        
+        sudo apt-get update
+        sudo apt-get install -y gcc-aarch64-linux-gnu g++-aarch64-linux-gnu
         
         git clone https://github.com/Linux-on-droid/create-disp.git
         cd create-disp
