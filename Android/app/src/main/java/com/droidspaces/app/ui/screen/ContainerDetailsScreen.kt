@@ -275,7 +275,7 @@ fun ContainerDetailsScreen(
                         anlandSocket?.let { AnlandUtils.launchWindow(context, container.name, it) }
                     },
                     onOpenApps = {
-                        navController.navigate(Screen.ContainerApps.createRoute(container.name))
+                        onOpenApps()
                     }
                 )
             }

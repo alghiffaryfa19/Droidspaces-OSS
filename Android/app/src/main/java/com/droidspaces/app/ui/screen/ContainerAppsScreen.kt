@@ -44,7 +44,8 @@ fun ContainerAppsScreen(
 
     LaunchedEffect(containerName) {
         withContext(Dispatchers.IO) {
-            val container = ContainerManager.getContainers().find { it.name == containerName }
+            val containerList = ContainerManager.listContainers()
+            val container = containerList.find { it.name == containerName }
             if (container != null) {
                 containerUuid = container.uuid
                 val rootfs = File(context.filesDir, "rootfs/${container.uuid}").absolutePath
@@ -99,14 +100,15 @@ fun ContainerAppsScreen(
                         onClick = {
                             // Launch the app
                             scope.launch(Dispatchers.IO) {
-                                val container = ContainerManager.getContainers().find { it.name == containerName }
+                                val containerList = ContainerManager.listContainers()
+                                val container = containerList.find { it.name == containerName }
                                 if (container != null) {
                                     if (!container.isRunning) {
-                                        ContainerManager.startContainer(container.name)
+                                        com.topjohnwu.superuser.Shell.cmd("${com.droidspaces.app.util.Constants.INSTALL_PATH}/droidspaces start ${container.name}").exec()
                                     }
-                                    com.topjohnwu.superuser.Shell.cmd("${com.droidspaces.app.util.Constants.BIN_DIR}/droidspaces exec ${container.name} -- ${app.exec} &").submit()
+                                    com.topjohnwu.superuser.Shell.cmd("${com.droidspaces.app.util.Constants.INSTALL_PATH}/droidspaces exec ${container.name} -- ${app.exec} &").submit()
                                     
-                                    val socketPath = "/data/local/tmp/anland-${container.uuid}.sock"
+                                    val socketPath = "/data/local/Droidspaces/Pids/${container.name}.anland"
                                     withContext(Dispatchers.Main) {
                                         com.droidspaces.app.util.AnlandUtils.launchWindow(context, container.name, socketPath)
                                     }

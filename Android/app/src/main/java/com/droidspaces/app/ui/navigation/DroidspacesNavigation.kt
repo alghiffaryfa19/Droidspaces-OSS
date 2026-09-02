@@ -195,15 +195,16 @@ fun DroidspacesNavigation(
                     val exec = parts[2]
                     
                     launch(Dispatchers.IO) {
-                        val container = ContainerManager.getContainers().find { it.uuid == uuid }
+                        val containerList = com.droidspaces.app.util.ContainerManager.listContainers()
+                        val container = containerList.find { it.uuid == uuid }
                         if (container != null) {
                             if (!container.isRunning) {
-                                ContainerManager.startContainer(container.name)
+                                com.topjohnwu.superuser.Shell.cmd("${com.droidspaces.app.util.Constants.INSTALL_PATH}/droidspaces start ${container.name}").exec()
                             }
                             
-                            com.topjohnwu.superuser.Shell.cmd("${Constants.BIN_DIR}/droidspaces exec ${container.name} -- $exec &").submit()
+                            com.topjohnwu.superuser.Shell.cmd("${com.droidspaces.app.util.Constants.INSTALL_PATH}/droidspaces exec ${container.name} -- $exec &").submit()
                             
-                            val socketPath = "/data/local/tmp/anland-${container.uuid}.sock"
+                            val socketPath = "/data/local/Droidspaces/Pids/${container.name}.anland"
                             withContext(Dispatchers.Main) {
                                 com.droidspaces.app.util.AnlandUtils.launchWindow(context, container.name, socketPath)
                             }
