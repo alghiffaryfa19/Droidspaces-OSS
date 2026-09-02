@@ -110,13 +110,15 @@ jobs:
         export CFLAGS="-I$(pwd)/termux-deps/data/data/com.termux/files/usr/include -I$(pwd)/termux-deps/data/data/com.termux/files/usr/include/libdrm -I$(pwd)/ubuntu-deps/usr/include -I$(pwd)/ubuntu-deps/usr/include/aarch64-linux-gnu -I$(pwd)/ubports-deps/usr/include -I$(pwd)/android-headers -I$(pwd)/libhybris"
         export LDFLAGS="-L$(pwd)/termux-deps/data/data/com.termux/files/usr/lib -L$(pwd)/ubuntu-deps/lib/aarch64-linux-gnu -L$(pwd)/ubuntu-deps/usr/lib/aarch64-linux-gnu -L$(pwd)/ubports-deps/usr/lib/aarch64-linux-gnu"
         
+        sudo apt-get update
+        sudo apt-get install -y gcc-aarch64-linux-gnu g++-aarch64-linux-gnu
+        
         git clone https://github.com/Linux-on-droid/create-disp.git
         cd create-disp
         mkdir -p build
         cmake -B build \
-          -DCMAKE_TOOLCHAIN_FILE=$ANDROID_NDK_LATEST_HOME/build/cmake/android.toolchain.cmake \
-          -DANDROID_ABI=arm64-v8a \
-          -DANDROID_PLATFORM=android-26 \
+          -DCMAKE_C_COMPILER=aarch64-linux-gnu-gcc \
+          -DCMAKE_CXX_COMPILER=aarch64-linux-gnu-g++ \
           -DCMAKE_C_FLAGS="$CFLAGS" \
           -DCMAKE_CXX_FLAGS="$CFLAGS" \
           -DCMAKE_EXE_LINKER_FLAGS="$LDFLAGS" \
