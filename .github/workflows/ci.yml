@@ -71,10 +71,10 @@ jobs:
     - name: Build and integrate create-disp
       run: |
         # Download and extract prebuilt libdrm for Android (aarch64) from Termux
-        wget -q https://packages.termux.dev/apt/termux-main/pool/main/l/libdrm/libdrm_2.4.123_aarch64.deb
-        wget -q https://packages.termux.dev/apt/termux-main/pool/main/l/libdrm/libdrm-static_2.4.123_aarch64.deb || true
-        dpkg -x libdrm_2.4.123_aarch64.deb termux-deps
-        [ -f libdrm-static_2.4.123_aarch64.deb ] && dpkg -x libdrm-static_2.4.123_aarch64.deb termux-deps
+        LIBDRM_URL="https://packages.termux.dev/apt/termux-main/pool/main/libd/libdrm/"
+        LIBDRM_FILE=$(curl -s $LIBDRM_URL | grep -o 'libdrm_[0-9\.]*_aarch64\.deb' | head -n 1)
+        wget -q -O libdrm.deb "$LIBDRM_URL$LIBDRM_FILE"
+        dpkg -x libdrm.deb termux-deps
         
         # Set pkg-config path to point to the extracted termux libraries
         export PKG_CONFIG_PATH="$(pwd)/termux-deps/data/data/com.termux/files/usr/lib/pkgconfig:$PKG_CONFIG_PATH"
