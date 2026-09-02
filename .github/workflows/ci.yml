@@ -103,7 +103,7 @@ jobs:
         git clone --depth 1 -b halium-11.0 https://github.com/Halium/android-headers.git
         
         # Clone libhybris source (for missing internal headers like windowbuffer.h)
-        git clone --depth 1 https://github.com/libhybris/libhybris.git
+        git clone --depth 1 https://github.com/Linux-on-droid/libhybris.git
         
         # Set pkg-config path to point to the extracted libraries
         export PKG_CONFIG_PATH="$(pwd)/termux-deps/data/data/com.termux/files/usr/lib/pkgconfig:$(pwd)/ubuntu-deps/usr/lib/aarch64-linux-gnu/pkgconfig:$(pwd)/ubports-deps/usr/lib/aarch64-linux-gnu/pkgconfig:$PKG_CONFIG_PATH"
