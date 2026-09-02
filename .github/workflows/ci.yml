@@ -70,8 +70,8 @@ jobs:
 
         # Download and extract libsystemd for arm64 from Ubuntu Ports
         SYS_URL="http://ports.ubuntu.com/pool/main/s/systemd/"
-        SYS_DEV=$(curl -s $SYS_URL | grep -o 'libsystemd-dev_[^"]*_arm64\.deb' | head -n 1)
-        SYS_LIB=$(curl -s $SYS_URL | grep -o 'libsystemd0_[^"]*_arm64\.deb' | head -n 1)
+        SYS_DEV=$(curl -s $SYS_URL | grep -o 'libsystemd-dev_[^"]*_arm64\.deb' | sort -V | tail -n 1)
+        SYS_LIB=$(curl -s $SYS_URL | grep -o 'libsystemd0_[^"]*_arm64\.deb' | sort -V | tail -n 1)
         wget -q -O sys-dev.deb "$SYS_URL$SYS_DEV"
         wget -q -O sys-lib.deb "$SYS_URL$SYS_LIB"
         dpkg -x sys-dev.deb ubuntu-deps
@@ -79,8 +79,8 @@ jobs:
         
         # Download and extract libdrm for arm64 from Ubuntu Ports
         DRM_URL="http://ports.ubuntu.com/pool/main/libd/libdrm/"
-        DRM_DEV=$(curl -s $DRM_URL | grep -o 'libdrm-dev_[^"]*_arm64\.deb' | head -n 1)
-        DRM_LIB=$(curl -s $DRM_URL | grep -o 'libdrm2_[^"]*_arm64\.deb' | head -n 1)
+        DRM_DEV=$(curl -s $DRM_URL | grep -o 'libdrm-dev_[^"]*_arm64\.deb' | sort -V | tail -n 1)
+        DRM_LIB=$(curl -s $DRM_URL | grep -o 'libdrm2_[^"]*_arm64\.deb' | sort -V | tail -n 1)
         wget -q -O drm-dev.deb "$DRM_URL$DRM_DEV"
         wget -q -O drm-lib.deb "$DRM_URL$DRM_LIB"
         dpkg -x drm-dev.deb ubuntu-deps
