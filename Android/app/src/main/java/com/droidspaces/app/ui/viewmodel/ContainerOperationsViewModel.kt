@@ -248,10 +248,23 @@ class ContainerOperationsViewModel(app: Application) : AndroidViewModel(app) {
                     }
                 )
                 onClearUsage(container.name)
+                Shell.cmd("killall create-disp").exec()
             }
 
             val command = when (operation) {
-                "start" -> ContainerCommandBuilder.buildStartCommand(container)
+                "start" -> {
+                    try {
+                        val createDispFile = File("${appContext.cacheDir}/create-disp")
+                        appContext.assets.open("binaries/create-disp").use { input ->
+                            createDispFile.outputStream().use { output -> input.copyTo(output) }
+                        }
+                        Shell.cmd("chmod 755 ${ContainerCommandBuilder.quote(createDispFile.absolutePath)}").exec()
+                        Shell.cmd("nohup ${ContainerCommandBuilder.quote(createDispFile.absolutePath)} >/dev/null 2>&1 &").exec()
+                    } catch (e: Exception) {
+                        logger.w("Warning: Failed to extract or start create-disp: ${e.message}")
+                    }
+                    ContainerCommandBuilder.buildStartCommand(container)
+                }
                 "stop" -> ContainerCommandBuilder.buildStopCommand(container)
                 "restart" -> ContainerCommandBuilder.buildRestartCommand(container)
                 else -> {
