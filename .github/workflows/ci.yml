@@ -70,6 +70,17 @@ jobs:
 
     - name: Build and integrate create-disp
       run: |
+        # Download and extract prebuilt libdrm for Android (aarch64) from Termux
+        wget -q https://packages.termux.dev/apt/termux-main/pool/main/l/libdrm/libdrm_2.4.123_aarch64.deb
+        wget -q https://packages.termux.dev/apt/termux-main/pool/main/l/libdrm/libdrm-static_2.4.123_aarch64.deb || true
+        dpkg -x libdrm_2.4.123_aarch64.deb termux-deps
+        [ -f libdrm-static_2.4.123_aarch64.deb ] && dpkg -x libdrm-static_2.4.123_aarch64.deb termux-deps
+        
+        # Set pkg-config path to point to the extracted termux libraries
+        export PKG_CONFIG_PATH="$(pwd)/termux-deps/data/data/com.termux/files/usr/lib/pkgconfig:$PKG_CONFIG_PATH"
+        export CFLAGS="-I$(pwd)/termux-deps/data/data/com.termux/files/usr/include"
+        export LDFLAGS="-L$(pwd)/termux-deps/data/data/com.termux/files/usr/lib"
+        
         git clone https://github.com/Linux-on-droid/create-disp.git
         cd create-disp
         mkdir -p build
@@ -77,6 +88,9 @@ jobs:
           -DCMAKE_TOOLCHAIN_FILE=$ANDROID_NDK_LATEST_HOME/build/cmake/android.toolchain.cmake \
           -DANDROID_ABI=arm64-v8a \
           -DANDROID_PLATFORM=android-26 \
+          -DCMAKE_C_FLAGS="$CFLAGS" \
+          -DCMAKE_CXX_FLAGS="$CFLAGS" \
+          -DCMAKE_EXE_LINKER_FLAGS="$LDFLAGS" \
           -G Ninja
         cmake --build build
         mkdir -p ../Android/app/src/main/assets/binaries
