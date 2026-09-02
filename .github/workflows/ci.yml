@@ -85,9 +85,13 @@ jobs:
         dpkg -x sys-dev.deb ubuntu-deps
         dpkg -x sys-lib.deb ubuntu-deps
         
+        # Fix pkg-config prefix paths for cross-compilation
+        find termux-deps -name "*.pc" -exec sed -i "s|^prefix=.*|prefix=$(pwd)/termux-deps/data/data/com.termux/files/usr|g" {} +
+        find ubuntu-deps -name "*.pc" -exec sed -i "s|^prefix=.*|prefix=$(pwd)/ubuntu-deps/usr|g" {} +
+        
         # Set pkg-config path to point to the extracted libraries
         export PKG_CONFIG_PATH="$(pwd)/termux-deps/data/data/com.termux/files/usr/lib/pkgconfig:$(pwd)/ubuntu-deps/usr/lib/aarch64-linux-gnu/pkgconfig:$PKG_CONFIG_PATH"
-        export CFLAGS="-I$(pwd)/termux-deps/data/data/com.termux/files/usr/include -I$(pwd)/ubuntu-deps/usr/include -I$(pwd)/ubuntu-deps/usr/include/aarch64-linux-gnu"
+        export CFLAGS="-I$(pwd)/termux-deps/data/data/com.termux/files/usr/include -I$(pwd)/termux-deps/data/data/com.termux/files/usr/include/libdrm -I$(pwd)/ubuntu-deps/usr/include -I$(pwd)/ubuntu-deps/usr/include/aarch64-linux-gnu"
         export LDFLAGS="-L$(pwd)/termux-deps/data/data/com.termux/files/usr/lib -L$(pwd)/ubuntu-deps/lib/aarch64-linux-gnu -L$(pwd)/ubuntu-deps/usr/lib/aarch64-linux-gnu"
         
         git clone https://github.com/Linux-on-droid/create-disp.git
