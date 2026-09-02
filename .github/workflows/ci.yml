@@ -90,10 +90,20 @@ jobs:
         HYB_URL="http://repo.ubports.com/pool/main/libh/libhybris/"
         HYB_DEV=$(curl -s $HYB_URL | grep -o 'libhybris-dev_[^"]*_arm64\.deb' | head -n 1)
         HYB_LIB=$(curl -s $HYB_URL | grep -o 'libhybris_[0-9][^"]*_arm64\.deb' | head -n 1)
+        HYB_COM=$(curl -s $HYB_URL | grep -o 'libhybris-common1_[^"]*_arm64\.deb' | head -n 1)
+        # ubports packages are named like libvulkan1-hybris, libhardware2, etc. Wait, is there a libhybris-platformcommon?
+        # Actually, let's just grep for any platformcommon
+        HYB_PLAT=$(curl -s $HYB_URL | grep -i -o '.*platformcommon.*_arm64\.deb' | head -n 1 || echo "")
         wget -q -O hyb-dev.deb "$HYB_URL$HYB_DEV"
         wget -q -O hyb-lib.deb "$HYB_URL$HYB_LIB"
+        wget -q -O hyb-com.deb "$HYB_URL$HYB_COM"
         dpkg -x hyb-dev.deb ubports-deps
         dpkg -x hyb-lib.deb ubports-deps
+        dpkg -x hyb-com.deb ubports-deps
+        if [ -n "$HYB_PLAT" ]; then
+            wget -q -O hyb-plat.deb "$HYB_URL$HYB_PLAT"
+            dpkg -x hyb-plat.deb ubports-deps
+        fi
         
         # Fix absolute symlinks and create missing .so symlinks
         for depdir in ubuntu-deps ubports-deps; do
@@ -131,6 +141,10 @@ jobs:
         
         git clone https://github.com/Linux-on-droid/create-disp.git
         cd create-disp
+        
+        # Remove hybris-platformcommon from target_link_libraries since it's an internal static library
+        sed -i '/hybris-platformcommon/d' CMakeLists.txt
+        
         mkdir -p build
         cmake -B build \
           -DCMAKE_C_COMPILER=aarch64-linux-gnu-gcc \
