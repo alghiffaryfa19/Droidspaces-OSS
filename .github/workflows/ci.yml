@@ -107,7 +107,7 @@ jobs:
         
         # Set pkg-config path to point to the extracted libraries
         export PKG_CONFIG_PATH="$(pwd)/termux-deps/data/data/com.termux/files/usr/lib/pkgconfig:$(pwd)/ubuntu-deps/usr/lib/aarch64-linux-gnu/pkgconfig:$(pwd)/ubports-deps/usr/lib/aarch64-linux-gnu/pkgconfig:$PKG_CONFIG_PATH"
-        export CFLAGS="-I$(pwd)/termux-deps/data/data/com.termux/files/usr/include -I$(pwd)/termux-deps/data/data/com.termux/files/usr/include/libdrm -I$(pwd)/ubuntu-deps/usr/include -I$(pwd)/ubuntu-deps/usr/include/aarch64-linux-gnu -I$(pwd)/ubports-deps/usr/include -I$(pwd)/android-headers -I$(pwd)/libhybris"
+        export CFLAGS="-I$(pwd)/libhybris/hybris/include -I$(pwd)/libhybris -I$(pwd)/termux-deps/data/data/com.termux/files/usr/include -I$(pwd)/termux-deps/data/data/com.termux/files/usr/include/libdrm -I$(pwd)/ubuntu-deps/usr/include -I$(pwd)/ubuntu-deps/usr/include/aarch64-linux-gnu -I$(pwd)/ubports-deps/usr/include -I$(pwd)/android-headers"
         export LDFLAGS="-L$(pwd)/termux-deps/data/data/com.termux/files/usr/lib -L$(pwd)/ubuntu-deps/lib/aarch64-linux-gnu -L$(pwd)/ubuntu-deps/usr/lib/aarch64-linux-gnu -L$(pwd)/ubports-deps/usr/lib/aarch64-linux-gnu"
         
         sudo apt-get update
