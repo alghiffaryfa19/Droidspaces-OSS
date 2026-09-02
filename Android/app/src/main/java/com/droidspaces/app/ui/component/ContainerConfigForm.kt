@@ -438,6 +438,14 @@ fun ContainerConfigForm(
         )
 
         ToggleCard(
+            icon = Icons.Default.Computer,
+            title = context.getString(R.string.enable_libhybris),
+            description = context.getString(R.string.enable_libhybris_description),
+            checked = state.enableLibhybris,
+            onCheckedChange = { clearFocus(); onStateChange(state.copy(enableLibhybris = it)) }
+        )
+
+        ToggleCard(
             icon = Icons.Default.Memory,
             title = context.getString(R.string.gpu_access),
             description = context.getString(R.string.gpu_access_description),

@@ -273,6 +273,8 @@ int ds_config_load(const char *config_path, struct ds_config *cfg) {
       cfg->android_storage = parse_bool(val);
     } else if (strcmp(key, "enable_hw_access") == 0) {
       cfg->hw_access = parse_bool(val);
+    } else if (strcmp(key, "enable_libhybris") == 0) {
+      cfg->libhybris = parse_bool(val);
     } else if (strcmp(key, "enable_gpu_mode") == 0) {
       cfg->gpu_mode = parse_bool(val);
     } else if (strcmp(key, "enable_termux_x11") == 0) {
@@ -653,6 +655,7 @@ static void ds_config_serialize_known(FILE *f, struct ds_config *cfg) {
     fprintf(f, "enable_anland=%d\n", cfg->anland);
   }
   fprintf(f, "enable_hw_access=%d\n", cfg->hw_access);
+  fprintf(f, "enable_libhybris=%d\n", cfg->libhybris);
   fprintf(f, "enable_gpu_mode=%d\n", cfg->gpu_mode);
   fprintf(f, "selinux_permissive=%d\n", cfg->selinux_permissive);
   fprintf(f, "allow_userns=%d\n", cfg->userns_allowed);

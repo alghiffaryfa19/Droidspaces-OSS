@@ -39,6 +39,7 @@ endif
 SRCS = $(SRC_DIR)/main.c \
        $(SRC_DIR)/utils.c \
        $(SRC_DIR)/android/android.c \
+       $(SRC_DIR)/android/hybris.c \
        $(SRC_DIR)/seccomp.c \
        $(SRC_DIR)/mount.c \
        $(SRC_DIR)/cgroup.c \

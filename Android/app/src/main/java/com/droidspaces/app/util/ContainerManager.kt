@@ -32,6 +32,7 @@ data class ContainerInfo(
     val disableIPv6: Boolean = false,
     val enableAndroidStorage: Boolean = false,
     val enableHwAccess: Boolean = false,
+    val enableLibhybris: Boolean = false,
     val enableGpuMode: Boolean = false,
     val enableTermuxX11: Boolean = false,
     val tx11ExtraFlags: String = "",
@@ -78,6 +79,7 @@ data class ContainerInfo(
         appendLine("disable_ipv6=${if (disableIPv6) "1" else "0"}")
         appendLine("enable_android_storage=${if (enableAndroidStorage) "1" else "0"}")
         appendLine("enable_hw_access=${if (enableHwAccess) "1" else "0"}")
+        appendLine("enable_libhybris=${if (enableLibhybris) "1" else "0"}")
         appendLine("enable_gpu_mode=${if (enableGpuMode) "1" else "0"}")
         appendLine("enable_termux_x11=${if (enableTermuxX11) "1" else "0"}")
         if (tx11ExtraFlags.isNotBlank()) appendLine("tx11_extra_flags=$tx11ExtraFlags")
@@ -390,6 +392,7 @@ object ContainerManager {
                 disableIPv6 = configMap["disable_ipv6"] == "1",
                 enableAndroidStorage = configMap["enable_android_storage"] == "1",
                 enableHwAccess = configMap["enable_hw_access"] == "1",
+                enableLibhybris = configMap["enable_libhybris"] == "1",
                 enableGpuMode = configMap["enable_gpu_mode"] == "1",
                 enableTermuxX11 = configMap["enable_termux_x11"] == "1",
                 tx11ExtraFlags = configMap["tx11_extra_flags"] ?: "",

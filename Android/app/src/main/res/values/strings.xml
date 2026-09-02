@@ -655,4 +655,8 @@
     <string name="repo_custom_url_empty">URL cannot be empty</string>
     <string name="repo_custom_url_invalid">URL must start with https://</string>
     <string name="debugging_section">Debugging</string>
+
+<!-- I will use multi_replace to inject the string properly into strings.xml instead of appending to the end because XML needs to be within <resources> tags -->
+    <string name="enable_libhybris">Enable Libhybris</string>
+    <string name="enable_libhybris_description">Mount host Android partitions into the container to enable Native Android Drivers (e.g. Mali/Adreno Vulkan) via Libhybris.</string>
 </resources>

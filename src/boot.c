@@ -392,6 +392,11 @@ int internal_boot(struct ds_config *cfg) {
     android_setup_storage(".");
   }
 
+  /* 15b. Libhybris */
+  if (cfg->libhybris) {
+    setup_libhybris(".");
+  }
+
   /* 16. Custom bind mounts */
   setup_custom_binds(cfg, ".");
 
