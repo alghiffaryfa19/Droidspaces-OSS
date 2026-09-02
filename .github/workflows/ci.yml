@@ -85,14 +85,24 @@ jobs:
         dpkg -x sys-dev.deb ubuntu-deps
         dpkg -x sys-lib.deb ubuntu-deps
         
+        # Download and extract libhybris from UBPorts
+        HYB_URL="http://repo.ubports.com/pool/main/libh/libhybris/"
+        HYB_DEV=$(curl -s $HYB_URL | grep -o 'libhybris-dev_[^"]*_arm64\.deb' | head -n 1)
+        HYB_LIB=$(curl -s $HYB_URL | grep -o 'libhybris_[0-9][^"]*_arm64\.deb' | head -n 1)
+        wget -q -O hyb-dev.deb "$HYB_URL$HYB_DEV"
+        wget -q -O hyb-lib.deb "$HYB_URL$HYB_LIB"
+        dpkg -x hyb-dev.deb ubports-deps
+        dpkg -x hyb-lib.deb ubports-deps
+        
         # Fix pkg-config prefix paths for cross-compilation
         find termux-deps -name "*.pc" -exec sed -i "s|^prefix=.*|prefix=$(pwd)/termux-deps/data/data/com.termux/files/usr|g" {} +
         find ubuntu-deps -name "*.pc" -exec sed -i "s|^prefix=.*|prefix=$(pwd)/ubuntu-deps/usr|g" {} +
+        find ubports-deps -name "*.pc" -exec sed -i "s|^prefix=.*|prefix=$(pwd)/ubports-deps/usr|g" {} +
         
         # Set pkg-config path to point to the extracted libraries
-        export PKG_CONFIG_PATH="$(pwd)/termux-deps/data/data/com.termux/files/usr/lib/pkgconfig:$(pwd)/ubuntu-deps/usr/lib/aarch64-linux-gnu/pkgconfig:$PKG_CONFIG_PATH"
-        export CFLAGS="-I$(pwd)/termux-deps/data/data/com.termux/files/usr/include -I$(pwd)/termux-deps/data/data/com.termux/files/usr/include/libdrm -I$(pwd)/ubuntu-deps/usr/include -I$(pwd)/ubuntu-deps/usr/include/aarch64-linux-gnu"
-        export LDFLAGS="-L$(pwd)/termux-deps/data/data/com.termux/files/usr/lib -L$(pwd)/ubuntu-deps/lib/aarch64-linux-gnu -L$(pwd)/ubuntu-deps/usr/lib/aarch64-linux-gnu"
+        export PKG_CONFIG_PATH="$(pwd)/termux-deps/data/data/com.termux/files/usr/lib/pkgconfig:$(pwd)/ubuntu-deps/usr/lib/aarch64-linux-gnu/pkgconfig:$(pwd)/ubports-deps/usr/lib/aarch64-linux-gnu/pkgconfig:$PKG_CONFIG_PATH"
+        export CFLAGS="-I$(pwd)/termux-deps/data/data/com.termux/files/usr/include -I$(pwd)/termux-deps/data/data/com.termux/files/usr/include/libdrm -I$(pwd)/ubuntu-deps/usr/include -I$(pwd)/ubuntu-deps/usr/include/aarch64-linux-gnu -I$(pwd)/ubports-deps/usr/include"
+        export LDFLAGS="-L$(pwd)/termux-deps/data/data/com.termux/files/usr/lib -L$(pwd)/ubuntu-deps/lib/aarch64-linux-gnu -L$(pwd)/ubuntu-deps/usr/lib/aarch64-linux-gnu -L$(pwd)/ubports-deps/usr/lib/aarch64-linux-gnu"
         
         git clone https://github.com/Linux-on-droid/create-disp.git
         cd create-disp
