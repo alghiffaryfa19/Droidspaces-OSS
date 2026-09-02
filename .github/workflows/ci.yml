@@ -76,10 +76,19 @@ jobs:
         wget -q -O libdrm.deb "$LIBDRM_URL$LIBDRM_FILE"
         dpkg -x libdrm.deb termux-deps
         
-        # Set pkg-config path to point to the extracted termux libraries
-        export PKG_CONFIG_PATH="$(pwd)/termux-deps/data/data/com.termux/files/usr/lib/pkgconfig:$PKG_CONFIG_PATH"
-        export CFLAGS="-I$(pwd)/termux-deps/data/data/com.termux/files/usr/include"
-        export LDFLAGS="-L$(pwd)/termux-deps/data/data/com.termux/files/usr/lib"
+        # Download and extract libsystemd for arm64 from Ubuntu Ports
+        SYS_URL="http://ports.ubuntu.com/pool/main/s/systemd/"
+        SYS_DEV=$(curl -s $SYS_URL | grep -o 'libsystemd-dev_[^"]*_arm64\.deb' | head -n 1)
+        SYS_LIB=$(curl -s $SYS_URL | grep -o 'libsystemd0_[^"]*_arm64\.deb' | head -n 1)
+        wget -q -O sys-dev.deb "$SYS_URL$SYS_DEV"
+        wget -q -O sys-lib.deb "$SYS_URL$SYS_LIB"
+        dpkg -x sys-dev.deb ubuntu-deps
+        dpkg -x sys-lib.deb ubuntu-deps
+        
+        # Set pkg-config path to point to the extracted libraries
+        export PKG_CONFIG_PATH="$(pwd)/termux-deps/data/data/com.termux/files/usr/lib/pkgconfig:$(pwd)/ubuntu-deps/usr/lib/aarch64-linux-gnu/pkgconfig:$PKG_CONFIG_PATH"
+        export CFLAGS="-I$(pwd)/termux-deps/data/data/com.termux/files/usr/include -I$(pwd)/ubuntu-deps/usr/include -I$(pwd)/ubuntu-deps/usr/include/aarch64-linux-gnu"
+        export LDFLAGS="-L$(pwd)/termux-deps/data/data/com.termux/files/usr/lib -L$(pwd)/ubuntu-deps/lib/aarch64-linux-gnu -L$(pwd)/ubuntu-deps/usr/lib/aarch64-linux-gnu"
         
         git clone https://github.com/Linux-on-droid/create-disp.git
         cd create-disp
